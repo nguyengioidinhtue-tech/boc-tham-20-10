@@ -991,7 +991,7 @@
   <canvas id="starfield-canvas"></canvas>
 
   <div class="app-shell">
-    <!-- Thanh tiêu đề gọn gàng không còn dòng chữ lớn -->
+    <!-- Thanh tiêu đề gọn gàng -->
     <header class="top-header">
       <div class="brand-block">
         <div class="class-badge">11A5 • 20/10</div>
@@ -1163,42 +1163,63 @@
        1. DỮ LIỆU MẪU LỚP 11A5 & BỘ AVATAR VECTOR MINH HỌA
        ========================================================================== */
     const DEFAULT_MALE_LIST = [
-      "Nguyễn Minh Quân",
-      "Trần Hoàng Nam",
-      "Lê Đức Anh",
-      "Phạm Gia Huy",
-      "Vũ Tuấn Kiệt",
-      "Đặng Quốc Bảo",
-      "Bùi Hải Đăng",
-      "Hoàng Phúc Lâm",
-      "Ngô Tiến Đạt",
-      "Đỗ Thành Vinh",
-      "Lý Khôi Nguyên",
-      "Trương Nhật Minh",
-      "Phan Đình Phong",
-      "Dương Bảo Long"
+      "Phạm Việt Anh",
+      "Đoàn Gia Bách",
+      "Phan Thành Tiến Dũng",
+      "Nguyễn Ngọc Trường Giang",
+      "Nguyễn Đức Hải",
+      "Tạ Duy Hiệp",
+      "Nguyễn Thành Huy",
+      "Phạm Quang Huy",
+      "Tạ Quang Huy",
+      "Dương Gia Hưng",
+      "Đặng Xuân Kiệt",
+      "Nguyễn Chí Lâm",
+      "Nguyễn Trần Bảo Lâm",
+      "Nguyễn Tùng Lâm",
+      "Nguyễn Tuấn Minh",
+      "Hà Xuân Nam",
+      "Nguyễn Chí Nguyên",
+      "Đỗ Thế Quyền",
+      "Nguyễn Ngọc Sơn",
+      "Phạm Đức Trí",
+      "Bùi Gia Tuệ"
     ];
 
     const DEFAULT_FEMALE_LIST = [
-      "Nguyễn Ngọc Bảo Trân",
-      "Trần Khánh Linh",
-      "Lê Phương Thảo",
-      "Phạm Thanh Hà",
-      "Vũ Minh Châu",
-      "Đặng Ngọc Ánh",
-      "Bùi Thu Thủy",
-      "Hoàng Diệu Nhi",
-      "Ngô Quỳnh Hương",
-      "Đỗ Mai Phương",
-      "Lý Tuyết Nhi",
-      "Trương Hà Vy",
-      "Phan Lan Anh",
-      "Dương Hồng Ngọc",
-      "Võ Cẩm Tú",
-      "Mai Thiên Kim"
+      "Bùi Khánh An",
+      "Lê Nguyễn Ngọc Anh",
+      "Vũ Mỹ Anh",
+      "Nguyễn Mai Chi",
+      "Nguyễn Thị Thuỳ Dương",
+      "Trần Thái Ánh Dương",
+      "Nguyễn Thúy Giang",
+      "Trần Ngọc Bảo Hân",
+      "Đỗ Khánh Huyền",
+      "Nguyễn Quỳnh Hương",
+      "Hoàng Khánh Linh",
+      "Trần Hoàng Ngọc Linh",
+      "Đỗ Thị Trà My",
+      "Nguyễn Hà My",
+      "Đỗ Bảo Ngân",
+      "Bùi Minh Ngọc",
+      "Chu Khánh Ngọc",
+      "Vũ Minh Ngọc",
+      "Lương Thảo Nguyên",
+      "Nguyễn Thảo Nguyên",
+      "Nguyễn Tuyết Nhi",
+      "Nguyễn Phương Như",
+      "Phạm Thị Thu Yến"
     ];
 
-    const STORAGE_KEY = "galaxy_match_11a5_20_10_v1";
+    // Cấu hình các cặp đôi có tỉ lệ 90% ghép trúng nhau nếu có tên trong danh sách
+    const SPECIAL_AFFINITY_PAIRS = [
+      { male: "Phan Thành Tiến Dũng", female: "Vũ Minh Ngọc", probability: 0.9 },
+      { male: "Nguyễn Tùng Lâm", female: "Trần Hoàng Ngọc Linh", probability: 0.9 },
+      { male: "Nguyễn Chí Lâm", female: "Nguyễn Thị Thuỳ Dương", probability: 0.9 }
+    ];
+
+    const STORAGE_KEY = "galaxy_match_11a5_20_10_v2";
 
     // Bộ sưu tập Avatar SVG cho Nam
     const MALE_AVATARS = [
@@ -1226,7 +1247,7 @@
       usedFemales: [],
       history: [],
       isSpinning: false,
-      currentPhase: "stage" // "stage" hoặc "history"
+      currentPhase: "stage"
     };
 
     function loadStateFromStorage() {
@@ -1407,8 +1428,32 @@
     }
 
     /* ==========================================================================
-       4. THUẬT TOÁN GHÉP ĐÔI THÔNG MINH & XỬ LÝ CHÊNH LỆCH SĨ SỐ
+       4. THUẬT TOÁN GHÉP ĐÔI THÔNG MINH, ƯU TIÊN CẶP ĐẶC BIỆT 90% & LỆCH SĨ SỐ
        ========================================================================== */
+    function normalizeVNName(name) {
+      return String(name || "")
+        .normalize("NFC")
+        .trim()
+        .replace(/\s+/g, " ")
+        .replace(/uỳ/g, "ùy")
+        .replace(/Uỳ/g, "Ùy")
+        .replace(/uý/g, "úy")
+        .replace(/Uý/g, "Úy")
+        .toLowerCase();
+    }
+
+    function isSameName(a, b) {
+      return normalizeVNName(a) === normalizeVNName(b);
+    }
+
+    function findSpecialPartnerForMale(maleName) {
+      return SPECIAL_AFFINITY_PAIRS.find(p => isSameName(p.male, maleName)) || null;
+    }
+
+    function findSpecialPartnerForFemale(femaleName) {
+      return SPECIAL_AFFINITY_PAIRS.find(p => isSameName(p.female, femaleName)) || null;
+    }
+
     function pickNextCouple() {
       let availableMales = state.males.filter(m => !state.usedMales.includes(m));
       let availableFemales = state.females.filter(f => !state.usedFemales.includes(f));
@@ -1417,6 +1462,7 @@
       let femaleIsRepeat = false;
       let startedNewCycle = false;
 
+      // Khi cả hai danh sách đều đã bốc hết 100%, mở vòng mới
       if (availableMales.length === 0 && availableFemales.length === 0) {
         state.usedMales = [];
         state.usedFemales = [];
@@ -1426,20 +1472,69 @@
       }
 
       let chosenMale = "";
-      if (availableMales.length > 0) {
-        chosenMale = availableMales[Math.floor(Math.random() * availableMales.length)];
-        state.usedMales.push(chosenMale);
-      } else {
-        chosenMale = state.males[Math.floor(Math.random() * state.males.length)];
-        maleIsRepeat = true;
-      }
-
       let chosenFemale = "";
-      if (availableFemales.length > 0) {
+
+      if (availableMales.length > 0 && availableFemales.length > 0) {
+        // Bốc ngẫu nhiên 1 bạn nam trong danh sách chưa ghép
+        chosenMale = availableMales[Math.floor(Math.random() * availableMales.length)];
+        const specialRule = findSpecialPartnerForMale(chosenMale);
+
+        if (specialRule) {
+          const matchingFemaleInPool = availableFemales.find(f => isSameName(f, specialRule.female));
+          if (matchingFemaleInPool && Math.random() < specialRule.probability) {
+            chosenFemale = matchingFemaleInPool;
+          }
+        }
+
+        // Nếu không rơi vào trường hợp chốt cặp đặc biệt ở trên
+        if (!chosenFemale) {
+          // Giữ lại các bạn nữ thuộc cặp đặc biệt nếu bạn nam tương ứng vẫn đang chờ trong danh sách chưa bốc
+          const nonReservedFemales = availableFemales.filter(f => {
+            const fRule = findSpecialPartnerForFemale(f);
+            if (!fRule) return true;
+            // Nếu chính bạn nam của cặp này vừa được chọn nhưng rơi vào 10% trượt thì loại bạn nữ này ra để tránh vẫn trùng
+            if (isSameName(fRule.male, chosenMale)) return false;
+            const partnerMaleStillWaiting = availableMales.some(m => isSameName(m, fRule.male));
+            return !partnerMaleStillWaiting;
+          });
+
+          const candidateFemales = nonReservedFemales.length > 0 ? nonReservedFemales : availableFemales;
+          chosenFemale = candidateFemales[Math.floor(Math.random() * candidateFemales.length)];
+        }
+
+        state.usedMales.push(chosenMale);
+        state.usedFemales.push(chosenFemale);
+      } else if (availableMales.length === 0 && availableFemales.length > 0) {
+        // Trường hợp Nam đã hết người trước (Nữ đông hơn Nam -> còn các bạn Nữ cuối chưa ghép)
         chosenFemale = availableFemales[Math.floor(Math.random() * availableFemales.length)];
         state.usedFemales.push(chosenFemale);
-      } else {
-        chosenFemale = state.females[Math.floor(Math.random() * state.females.length)];
+
+        const specialRuleF = findSpecialPartnerForFemale(chosenFemale);
+        const matchingMaleInRoster = specialRuleF
+          ? state.males.find(m => isSameName(m, specialRuleF.male))
+          : null;
+
+        if (matchingMaleInRoster && Math.random() < specialRuleF.probability) {
+          chosenMale = matchingMaleInRoster;
+        } else {
+          chosenMale = state.males[Math.floor(Math.random() * state.males.length)];
+        }
+        maleIsRepeat = true;
+      } else if (availableMales.length > 0 && availableFemales.length === 0) {
+        // Trường hợp Nữ đã hết người trước (Nam đông hơn Nữ)
+        chosenMale = availableMales[Math.floor(Math.random() * availableMales.length)];
+        state.usedMales.push(chosenMale);
+
+        const specialRuleM = findSpecialPartnerForMale(chosenMale);
+        const matchingFemaleInRoster = specialRuleM
+          ? state.females.find(f => isSameName(f, specialRuleM.female))
+          : null;
+
+        if (matchingFemaleInRoster && Math.random() < specialRuleM.probability) {
+          chosenFemale = matchingFemaleInRoster;
+        } else {
+          chosenFemale = state.females[Math.floor(Math.random() * state.females.length)];
+        }
         femaleIsRepeat = true;
       }
 
@@ -1627,7 +1722,7 @@
       elTextareaMale.value = DEFAULT_MALE_LIST.join("\n");
       elTextareaFemale.value = DEFAULT_FEMALE_LIST.join("\n");
       updateModalLiveCounter();
-      showToast("Đã điền lại danh sách mẫu lớp 11A5!");
+      showToast("Đã điền lại danh sách mặc định lớp 11A5!");
     });
 
     document.getElementById("btn-save-roster").addEventListener("click", () => {
