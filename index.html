@@ -1212,14 +1212,15 @@
       "Phạm Thị Thu Yến"
     ];
 
-    // Cấu hình các cặp đôi có tỉ lệ 90% ghép trúng nhau nếu có tên trong danh sách
+    // Cấu hình các cặp đôi có tỉ lệ 95% ghép trúng nhau nếu có tên trong danh sách
     const SPECIAL_AFFINITY_PAIRS = [
-      { male: "Phan Thành Tiến Dũng", female: "Vũ Minh Ngọc", probability: 0.9 },
-      { male: "Nguyễn Tùng Lâm", female: "Trần Hoàng Ngọc Linh", probability: 0.9 },
-      { male: "Nguyễn Chí Lâm", female: "Nguyễn Thị Thuỳ Dương", probability: 0.9 }
+      { male: "Phan Thành Tiến Dũng", female: "Vũ Minh Ngọc", probability: 0.95 },
+      { male: "Nguyễn Tùng Lâm", female: "Trần Hoàng Ngọc Linh", probability: 0.95 },
+      { male: "Nguyễn Chí Lâm", female: "Nguyễn Thị Thuỳ Dương", probability: 0.95 },
+      { male: "Nguyễn Ngọc Trường Giang", female: "Nguyễn Thảo Nguyên", probability: 0.95 }
     ];
 
-    const STORAGE_KEY = "galaxy_match_11a5_20_10_v2";
+    const STORAGE_KEY = "galaxy_match_11a5_20_10_v3";
 
     // Bộ sưu tập Avatar SVG cho Nam
     const MALE_AVATARS = [
@@ -1428,7 +1429,7 @@
     }
 
     /* ==========================================================================
-       4. THUẬT TOÁN GHÉP ĐÔI THÔNG MINH, ƯU TIÊN CẶP ĐẶC BIỆT 90% & LỆCH SĨ SỐ
+       4. THUẬT TOÁN GHÉP ĐÔI THÔNG MINH, ƯU TIÊN CẶP ĐẶC BIỆT 95% & LỆCH SĨ SỐ
        ========================================================================== */
     function normalizeVNName(name) {
       return String(name || "")
@@ -1492,7 +1493,7 @@
           const nonReservedFemales = availableFemales.filter(f => {
             const fRule = findSpecialPartnerForFemale(f);
             if (!fRule) return true;
-            // Nếu chính bạn nam của cặp này vừa được chọn nhưng rơi vào 10% trượt thì loại bạn nữ này ra để tránh vẫn trùng
+            // Nếu chính bạn nam của cặp này vừa được chọn nhưng rơi vào 5% trượt thì loại bạn nữ này ra để tránh vẫn trùng
             if (isSameName(fRule.male, chosenMale)) return false;
             const partnerMaleStillWaiting = availableMales.some(m => isSameName(m, fRule.male));
             return !partnerMaleStillWaiting;
